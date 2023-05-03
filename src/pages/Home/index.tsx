@@ -22,44 +22,56 @@ interface CartItemsAmount {
 }
 
 const Home = (): JSX.Element => {
-  // const [products, setProducts] = useState<ProductFormatted[]>([]);
-  // const { addProduct, cart } = useCart();
+  const [products, setProducts] = useState<ProductFormatted[]>([]);
+  const { addProduct, cart } = useCart();
 
-  // const cartItemsAmount = cart.reduce((sumAmount, product) => {
-  //   // TODO
-  // }, {} as CartItemsAmount)
+  const cartItemsAmount = cart.reduce((sumAmount, product) => {
+    const newSumAmount = {...sumAmount};
+    newSumAmount[product.id] = product.amount;
+
+    return newSumAmount;
+  }, {} as CartItemsAmount)
 
   useEffect(() => {
     async function loadProducts() {
-      // TODO
+      const response = await api.get("/products");
+      const products: Product[] = response.data;
+
+      const formattedProducts: ProductFormatted[] = products.map(prod => (
+        {...prod, priceFormatted: formatPrice(prod.price)}
+      ))
+
+      setProducts(formattedProducts);
     }
 
     loadProducts();
   }, []);
 
   function handleAddProduct(id: number) {
-    // TODO
+    addProduct(id);
   }
 
   return (
     <ProductList>
-      <li>
-        <img src="https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis1.jpg" alt="Tênis de Caminhada Leve Confortável" />
-        <strong>Tênis de Caminhada Leve Confortável</strong>
-        <span>R$ 179,90</span>
+      {products.map(prod => (
+        <li key={prod.id}>
+        <img src={prod.image} alt={prod.title} />
+        <strong>{prod.title}</strong>
+        <span>{prod.priceFormatted}</span>
         <button
           type="button"
           data-testid="add-product-button"
-        // onClick={() => handleAddProduct(product.id)}
+          onClick={() => handleAddProduct(prod.id)}
         >
           <div data-testid="cart-product-quantity">
             <MdAddShoppingCart size={16} color="#FFF" />
-            {/* {cartItemsAmount[product.id] || 0} */} 2
+            {cartItemsAmount[prod.id] || 0}
           </div>
 
           <span>ADICIONAR AO CARRINHO</span>
         </button>
       </li>
+      ))}
     </ProductList>
   );
 };
